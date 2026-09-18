@@ -95,18 +95,12 @@ git clone https://github.com/ajmachowiak/sdp-compliance-tool.git
 cd sdp-compliance-tool
 ```
 
-### 2. Create Virtual Environment
-```bash
-python -m venv venv
-source venv/bin/activate  # on Windows use: venv\Scripts\activate
-```
-
-### 3. Install dependencies
+### 2. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Configure Secrets (`.streamlit/secrets.toml`)
+### 3. Configure Secrets (`.streamlit/secrets.toml`)
 Configure your local secrets file *(or Streamlit Cloud Secrets manager)*:
 
 ```toml
@@ -122,7 +116,7 @@ accounts_url = "https://accounts.manageengine.com"
 api_domain = "https://your-sdp-instance.com"
 ```
 
-### 5. Run the Streamlit App
+### 4. Run the Streamlit App
 ```bash
 streamlit run app.py
 ```

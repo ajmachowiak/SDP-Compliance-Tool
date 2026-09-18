@@ -91,7 +91,7 @@ This allows the app to check if any tickets already exist (`SDPOnDemand.requests
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/OriginalMistake/sdp-compliance-tool.git
+git clone https://github.com/ajmachowiak/sdp-compliance-tool.git
 cd sdp-compliance-tool
 ```
 

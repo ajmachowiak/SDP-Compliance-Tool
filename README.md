@@ -1,10 +1,8 @@
-# 💻 ServiceDesk Plus Compliance Automation Tool
+# ServiceDesk Plus Compliance Automation Tool
 
-A secure, high-performance Streamlit web application designed to merge, clean and process device compliance reports.
-Enabling IT Support teams to automatically log or update tickets in **ServiceDesk Plus (SDP)**. 
+A Streamlit web application that merges, cleans and processes endpoint compliance CSV reports to automate ticket creation in ServiceDesk Plus (SDP).
 
-Built with **Python**, **Streamlit** and concurrent batch processing (`ThreadPoolExecutor`).  
-This tool speeds up ticket generation while maintaining real-time audit control and emergency stop capabilities.
+Built using Python, Streamlit, and concurrent batch processing (`ThreadPoolExecutor`), this tool eliminates manual CSV cross-referencing and automates ticket generation while enforcing real-time audit control and emergency-stop guardrails.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
@@ -12,29 +10,34 @@ This tool speeds up ticket generation while maintaining real-time audit control 
 
 ---
 
-## 📁 Repository Structure
+## Context & Impact
 
-* `app.py` - Core Streamlit interface, CSV parsing logic and SDP API dispatch handlers.
-* `config.py` - Central configuration file for site mappings, CSV header offsets, admin RBAC lists and SDP ticket templates.
+While working as an IT Support Engineer, weekly compliance checks were a massive operational bottleneck. The process required pulling two separate MCM reports, manually cross-referencing ~2,000 rows in Excel (~1,000 machines per report), checking ServiceDesk Plus (SDP) for existing open tickets, looking up device ownership data and filling out ticket templates line-by-line.
 
-*Customisations are done within `config.py`*
+I built this Streamlit app to automate that entire workflow.
+It cleans and merges both CSV reports, matches endpoints if in both reports and displays flagged devices in an interactive table. Then once you dispatch the structured tickets, via the SDP API, it will cross reference the SDP Asset register for device ownership (which will inject into the ticket body) and send back the created/updated ticket number on the Streamlit app.
 
----
-
-## ⚡ Key Features
-
-* **Parallel Processing Engine:** Dispatches requests concurrently in batches of 5.
-* **Automated Data Sanitisation:** Strips metadata header noise, normalises hostnames and matches records across report types.
-* **Smart Ticket Handling:** Identifies existing open tickets to append notes rather than creating duplicate tickets.
-* **Emergency Stop & Audit:** Instantly stops outgoing API requests and outputs an audit log of all actions taken prior to cancellation.
-* **Stateless & Private:** Session data runs in memory and clears automatically when the tab is closed or refreshed.
+### Impact
+* Reduced total process time from ***0.5-3 days*** down to under ***15 minutes***.
+* Reclaimed ***6-24 hours per week*** of engineering labour.
+* Eliminated duplicate tickets and manual cross-referencing errors.
 
 ---
 
-## 🖼️ Interface Preview
+## Key Features
+
+* Dispatches requests concurrently in batches of 5.
+* Strips metadata header noise, normalises hostnames and matches records across report types.
+* Identifies existing open tickets to append notes rather than creating duplicate tickets.
+* Emergency button instantly stops outgoing API requests and outputs an audit log of all actions taken prior to cancellation.
+* Session data runs in memory and clears automatically when the tab is closed or refreshed.
+
+---
+
+## Interface Preview
 
 ### 1. Upload CSVs
-Upload raw CSV exports (e.g Windows Updates & Endpoint Scan reports) to correlate missing updates and check-in activity.
+Upload raw CSV exports (e.g. Windows Updates & Endpoint Scan reports) to correlate missing updates and check-in activity.
 
 ![Upload CSVs](images/upload-view.png)
 
@@ -44,18 +47,33 @@ Interactive review table of the merged results.
 ![Merged Results Table](images/merged-table-view.png)
 
 ### 3. Concurrent Dispatch
-Monitor real-time ticket creation with progress indicators and emergency stop protection.
+Monitor real time ticket creation with progress indicators and emergency stop protection.
 
 ![Dispatch System](images/dispatch-tickets-view.png)
 
 ### 4. Audit Preview
-View which machines have had a ticket created or updated.
+View which endpoints have had a ticket created or updated.
 
 ![Audit System](images/audit-view.png)
 
 ---
 
-## 📁 Repository Structure
+## Logic Flow
+
+```text
+[ Raw CSV 1: Windows Updates      ] ────┐
+                                        ├──> [ Normalise Hostnames & Filter ] ──> [ Parallel Dispatch (5 Workers) ] ──> [ ServiceDesk Plus API ]
+[ Raw CSV 2: Endpoint Scan Report ] ────┘
+```
+
+1. Raw CSVs dropped into designated slots, automatically stripping metadata headers based on offset rules in `config.py`.
+2. Normalises hostnames (uppercase, strips domain suffixes) to cross-reference data.
+3. Flags devices with missing updates or inactive days above defined limits.
+4. Submits concurrent API payload requests to SDP to fetch open tickets or create/update them dynamically.
+
+---
+
+## Repository Structure
 
 ```
 sdp-compliance-tool/
@@ -67,17 +85,17 @@ sdp-compliance-tool/
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
-* **Python:** 3.10 or higher.
-* **ManageEngine ServiceDesk Plus:** Cloud or On-Premise instance with REST API v3 access.
-* **Azure AD / SSO App Registration:** If enforcing organisational SSO.
-* **API Credentials:** SDP OAuth2 credentials with specified scopes mentioned in the ***SDP API Scope*** section.
-* **Streamlit Cloud:** This app is setup to work on Streamlit Cloud, which provides the main UI.
+* Python 3.10+
+* ServiceDesk Plus instance with REST API v3 enabled
+* Azure AD/SSO App Registration if enforcing organisational SSO.
+* SDP OAuth2 credentials with specified scopes mentioned in the ***SDP API Scope*** section.
+* This app is setup to work on Streamlit Cloud, which provides the UI.
 
 ---
 
-## 🔬 SDP API Scope
+## SDP API Scope
 
 The scope required for the service account used by this application:
 ```text
@@ -87,20 +105,16 @@ This allows the app to check if any tickets already exist (`SDPOnDemand.requests
 
 ---
 
-## 🚀 Installation & Setup
+## Quick Start & Setup
 
-### 1. Clone Repository
+### 1. Clone & Install
 ```bash
 git clone https://github.com/ajmachowiak/sdp-compliance-tool.git
 cd sdp-compliance-tool
-```
-
-### 2. Install dependencies
-```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configure Secrets (`.streamlit/secrets.toml`)
+### 2. Configure Local Secrets (`.streamlit/secrets.toml`)
 Configure your local secrets file *(or Streamlit Cloud Secrets manager)*:
 
 ```toml
@@ -116,14 +130,14 @@ accounts_url = "https://accounts.manageengine.com"
 api_domain = "https://your-sdp-instance.com"
 ```
 
-### 4. Run the Streamlit App
+### 3. Run App Locally
 ```bash
 streamlit run app.py
 ```
 
 ---
 
-## 🛠️ Configuration (`config.py`)
+## Configuration (`config.py`)
 
 All site-specific settings, thresholds and mappings are centralised in `config.py`.
 
@@ -148,31 +162,16 @@ Customise site routing and default ticket content:
 
 ---
 
-## 🧠 Logic Flow
-
-```text
-[ Raw CSV 1: Windows Updates      ] ────┐
-                                        ├──> [ Normalise Hostnames & Filter ] ──> [ Parallel Dispatch (5 Workers) ] ──> [ ServiceDesk Plus API ]
-[ Raw CSV 2: Endpoint Scan Report ] ────┘
-```
-
-1. **Upload & Parsing:** Raw CSVs drop into designated slots, automatically stripping metadata headers based on offset rules in `config.py`.
-2. **Key Matching:** Normalises hostnames (uppercase, strips domain suffixes) to cross-reference data.
-3. **Threshold Check:** Flags devices with missing updates or inactive days above defined limits.
-4. **Execution:** Submits concurrent API payload requests to SDP to fetch open tickets or create/update them dynamically.
-
----
-
-## 💬 Issues & Support
+## Issues & Support
 
 If you encounter a bug, have a feature request or run into issues with report formatting:
 
-1. **Check existing issues:** Search the GitHub Issues tab to see if it has already been reported.
-2. **Open a new issue:** Provide details about expected vs. actual behavior, along with relevant error logs (ensuring no sensitive data or credentials are included).
-3. **Pull Requests:** Contributions are welcome! Feel free to fork the repo and submit a PR.
+1. Search the GitHub Issues tab to see if it has already been reported.
+2. Provide details about expected vs. actual behavior, along with relevant error logs (ensuring no sensitive data or credentials are included).
+3. Contributions are welcome! Feel free to fork the repo and submit a PR.
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for more information.

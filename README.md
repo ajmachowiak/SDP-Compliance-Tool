@@ -7,6 +7,7 @@ Built using Python, Streamlit, and concurrent batch processing (`ThreadPoolExecu
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.25%2B-red.svg)](https://streamlit.io/)
+[![ServiceDesk Plus](https://img.shields.io/badge/ServiceDesk%20Plus-REST%20API%20v3-orange.svg)](https://www.manageengine.com/products/service-desk/)
 
 ---
 
